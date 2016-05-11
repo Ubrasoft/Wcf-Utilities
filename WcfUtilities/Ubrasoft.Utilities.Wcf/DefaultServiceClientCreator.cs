@@ -1,42 +1,69 @@
 ﻿using System;
+using System.Net;
 using System.ServiceModel;
+using Ubrasoft.Utilities.Wcf.AddWseSecurityHeader;
+using Ubrasoft.Utilities.Wcf.MessageLogging;
 
 namespace Ubrasoft.Utilities.Wcf
 {
     public static class DefaultServiceClientCreator
     {
         public static TClient CreateClient<TClient, TService>(
+            WebServiceAccessInfo webServiceAccessInfo,
             IClientMessageLogger clientMessageLogger,
-            ILogMetadataProvider logMetadataProvider, 
-            string url, 
-            string proxy,
-            string username = null, 
-            string password = null)
+            ILogMetadataProvider logMetadataProvider)
             where TClient : ClientBase<TService> 
             where TService : class
         {
-            bool sendCredentials = username != null && password != null;
+            // Create binding.
             BasicHttpBinding binding = new BasicHttpBinding();
-            if (proxy != null)
-            {
-                binding.ProxyAddress = new Uri(proxy);
-                binding.UseDefaultWebProxy = false;
-            }
             binding.Security.Mode = BasicHttpSecurityMode.Transport;
-            if (sendCredentials) binding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Basic;
-            else binding.Security.Transport.ClientCredentialType = HttpClientCredentialType.None;
+            binding.Security.Transport.ClientCredentialType = HttpClientCredentialType.None;
 
-            var address = new EndpointAddress(url);
-
-            var client = Activator.CreateInstance(typeof(TClient), binding, address) as TClient;
-            if (sendCredentials)
+            // Set proxy info.
+            if (webServiceAccessInfo.Proxy != null)
             {
-                client.ClientCredentials.UserName.UserName = username;
-                client.ClientCredentials.UserName.Password = password;
+                var proxyUriBuilder = new UriBuilder(webServiceAccessInfo.Proxy.Url);
+
+                if (!string.IsNullOrWhiteSpace(webServiceAccessInfo.Proxy.Username) &&
+                    !string.IsNullOrWhiteSpace(webServiceAccessInfo.Proxy.Password))
+                {
+                    proxyUriBuilder.UserName = webServiceAccessInfo.Proxy.Username;
+                    proxyUriBuilder.Password = webServiceAccessInfo.Proxy.Password;
+                }
+
+                binding.UseDefaultWebProxy = false;
+                binding.ProxyAddress = proxyUriBuilder.Uri;
             }
 
-            client.Endpoint.EndpointBehaviors.Add(
-                new MessageLogging.MessageLoggingEndpointBehavior(clientMessageLogger, logMetadataProvider));
+            // Create a soap client.
+            var client = Activator.CreateInstance(typeof(TClient), binding, new EndpointAddress(webServiceAccessInfo.Url)) as TClient;
+            
+            // Validate username and password; if any security header is sent.
+            if((webServiceAccessInfo.AddHttpSecurityHeader || webServiceAccessInfo.AddWseSecurityHeader) &&
+                (string.IsNullOrWhiteSpace(webServiceAccessInfo.Username) || string.IsNullOrWhiteSpace(webServiceAccessInfo.Password)))
+                throw new ArgumentException("UsernameAndPasswordShouldNotBeEmpty");
+
+            // Add basic http authentication Header
+            if (webServiceAccessInfo.AddHttpSecurityHeader)
+            {
+                binding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Basic;
+                client.ClientCredentials.UserName.UserName = webServiceAccessInfo.Username;
+                client.ClientCredentials.UserName.Password = webServiceAccessInfo.Password;
+            }
+
+            // Add Wse security Header.
+            if (webServiceAccessInfo.AddWseSecurityHeader)
+            {
+                var securityHeaderBehaviour = new AddWseSecurityHeaderEndpointBehavior(webServiceAccessInfo.Username, webServiceAccessInfo.Password);
+                client.Endpoint.EndpointBehaviors.Add(securityHeaderBehaviour);
+            }
+
+            // Set message logging inspector.
+            {
+                var logginBehaviour = new MessageLoggingEndpointBehavior(clientMessageLogger, logMetadataProvider);
+                client.Endpoint.EndpointBehaviors.Add(logginBehaviour);
+            }
 
             return client;
         }
