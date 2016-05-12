@@ -46,9 +46,8 @@
     <Compile Include="AddWseSecurityHeader\AddWseSecurityHeaderEndpointBehavior.cs" />
     <Compile Include="AddWseSecurityHeader\AddWseSecurityHeaderMessageInspector.cs" />
     <Compile Include="AddWseSecurityHeader\CustomWseSecurityHeader.cs" />
-    <Compile Include="DefaultServiceClientCreator.cs" />
+    <Compile Include="ServiceClientCreator.cs" />
     <Compile Include="IClientMessageLogger.cs" />
-    <Compile Include="ILogMetadataProvider.cs" />
     <Compile Include="MessageLogging\MessageLoggingEndpointBehavior.cs" />
     <Compile Include="MessageLogging\MessageLoggingMessageInspector.cs" />
     <Compile Include="MessageSerializerHelper.cs" />

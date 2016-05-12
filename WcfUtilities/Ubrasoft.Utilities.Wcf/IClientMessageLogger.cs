@@ -10,11 +10,11 @@ namespace Ubrasoft.Utilities.Wcf
         /// <summary>
         /// Handle request message sent to the soap service.
         /// </summary>
-        void HandleRequestMessage(Message message, ILogMetadataProvider logMetadataProvider);
+        void HandleRequestMessage(Message message, object metadataObject);
 
         /// <summary>
         /// Handle response message received from the soap service.
         /// </summary>
-        void HandleResponseMessage(Message message, ILogMetadataProvider logMetadataProvider);
+        void HandleResponseMessage(Message message, object metadataObject);
     }
 }

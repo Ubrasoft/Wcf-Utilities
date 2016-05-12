@@ -11,12 +11,12 @@ namespace Ubrasoft.Utilities.Wcf.MessageLogging
     public class MessageLoggingMessageInspector : IClientMessageInspector
     {
         private readonly IClientMessageLogger _messageLogger;
-        private readonly ILogMetadataProvider _logMetadataProvider;
+        private readonly object _metadataObject;
 
-        public MessageLoggingMessageInspector(IClientMessageLogger messageLogger, ILogMetadataProvider logMetadataProvider)
+        public MessageLoggingMessageInspector(IClientMessageLogger messageLogger, object metadataObject)
         {
             _messageLogger = messageLogger;
-            _logMetadataProvider = logMetadataProvider;
+            _metadataObject = metadataObject;
         }
 
         #region IClientMessageInspector Members
@@ -30,7 +30,7 @@ namespace Ubrasoft.Utilities.Wcf.MessageLogging
             try
             {
                 var messageForInspection = messageBuffer.CreateMessage();
-                _messageLogger.HandleResponseMessage(messageForInspection, _logMetadataProvider);
+                _messageLogger.HandleResponseMessage(messageForInspection, _metadataObject);
             }
             catch
             {
@@ -48,7 +48,7 @@ namespace Ubrasoft.Utilities.Wcf.MessageLogging
 
             // Dispatch message copy to injected message logger.
             var messageForInspection = messageBuffer.CreateMessage();
-            _messageLogger.HandleRequestMessage(messageForInspection, _logMetadataProvider);
+            _messageLogger.HandleRequestMessage(messageForInspection, _metadataObject);
 
             // Return copy of origonal message with unalterd State
             request = messageBuffer.CreateMessage();
