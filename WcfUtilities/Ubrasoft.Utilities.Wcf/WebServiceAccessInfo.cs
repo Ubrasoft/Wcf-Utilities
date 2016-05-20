@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Ubrasoft.Utilities.Wcf
 {
     public class WebServiceAccessInfo
