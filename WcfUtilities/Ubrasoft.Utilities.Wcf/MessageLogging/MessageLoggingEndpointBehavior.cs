@@ -11,12 +11,10 @@ namespace Ubrasoft.Utilities.Wcf.MessageLogging
     public class MessageLoggingEndpointBehavior : IEndpointBehavior
     {
         private readonly IClientMessageLogger _clientMessageLogger;
-        private readonly object _metadataObject;
 
-        public MessageLoggingEndpointBehavior(IClientMessageLogger clientMessageLogger, object metadataObject)
+        public MessageLoggingEndpointBehavior(IClientMessageLogger clientMessageLogger)
         {
             _clientMessageLogger = clientMessageLogger;
-            _metadataObject = metadataObject;
         }
 
 
@@ -29,7 +27,7 @@ namespace Ubrasoft.Utilities.Wcf.MessageLogging
         public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime)
         {
             MessageLoggingMessageInspector inspector =
-                new MessageLoggingMessageInspector(_clientMessageLogger, _metadataObject);
+                new MessageLoggingMessageInspector(_clientMessageLogger);
 
             clientRuntime.MessageInspectors.Add(inspector);
         }

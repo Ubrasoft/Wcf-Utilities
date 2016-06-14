@@ -10,11 +10,16 @@ namespace Ubrasoft.Utilities.Wcf
     {
         public static TClient CreateClient<TClient, TService>(
             WebServiceAccessInfo webServiceAccessInfo,
-            IClientMessageLogger clientMessageLogger,
-            object metadataObject)
+            IClientMessageLogger clientMessageLogger)
             where TClient : ClientBase<TService>
             where TService : class
         {
+            if(webServiceAccessInfo == null)
+                throw new Exception("WebServiceInfoShouldBeGiven");
+            if (clientMessageLogger == null)
+                throw new Exception("ClientMessageLoggerShouldBeGiven");
+
+
             // Create binding.
             BasicHttpBinding binding = new BasicHttpBinding();
             binding.Security.Mode = BasicHttpSecurityMode.Transport;
@@ -65,7 +70,7 @@ namespace Ubrasoft.Utilities.Wcf
 
             // Set message logging inspector.
             {
-                var logginBehaviour = new MessageLoggingEndpointBehavior(clientMessageLogger, metadataObject);
+                var logginBehaviour = new MessageLoggingEndpointBehavior(clientMessageLogger);
                 client.Endpoint.EndpointBehaviors.Add(logginBehaviour);
             }
 
