@@ -30,6 +30,10 @@ namespace Ubrasoft.Utilities.Wcf
             // Set proxy info.
             if (webServiceAccessInfo.Proxy != null)
             {
+                /*
+                 * Here we use an uri with credentials. Because wcf does not support
+                 * both setting http auth credentials and proxy credentials at the same time. 
+                 */
                 var proxyUriBuilder = new UriBuilder(webServiceAccessInfo.Proxy.Url);
 
                 if (!string.IsNullOrWhiteSpace(webServiceAccessInfo.Proxy.Username) &&
